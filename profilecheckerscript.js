@@ -93,5 +93,6 @@ async function checkFrontProfile() {
 
 window.onload = async function () {
   await startVideo();
+  await getCameras();
   requestAnimationFrame(checkFrontProfile);
 };
