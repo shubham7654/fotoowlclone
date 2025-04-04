@@ -1,15 +1,26 @@
 Promise.all([
   faceapi.nets.tinyFaceDetector.loadFromUri("./models"),
   faceapi.nets.faceLandmark68Net.loadFromUri("./models"),
-]).then(startVideo);
+]).then(() => startVideo());
 
-async function startVideo() {
+let currentStream = null;
+let videoDevices = [];
+let currentDeviceIndex = 0;
+
+async function startVideo(deviceId = null) {
+
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+}
+
+const constraints = {
+    video: deviceId ? { deviceId: { exact: deviceId } } : true
+};
+
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-    });
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
     const video = document.getElementById("video");
-    video.srcObject = stream;
+    video.srcObject = currentStream;
   } catch (err) {
     console.error("Camera access error:", err);
     document.getElementById("status").innerText = "❌ Camera access denied!";
@@ -18,17 +29,16 @@ async function startVideo() {
 
 async function getCameras() {
   const devices = await navigator.mediaDevices.enumerateDevices();
-  videoDevices = devices.filter(device => device.kind === "videoinput");
+  videoDevices = devices.filter((device) => device.kind === "videoinput");
   console.log("Available cameras:", videoDevices);
 }
 
-
 document.getElementById("switchCamera").addEventListener("click", async () => {
   if (videoDevices.length > 1) {
-      currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-      await startVideo(videoDevices[currentDeviceIndex].deviceId);
+    currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+    await startVideo(videoDevices[currentDeviceIndex].deviceId);
   } else {
-      alert("No other camera found!");
+    alert("No other camera found!");
   }
 });
 
@@ -70,8 +80,7 @@ async function checkFrontProfile() {
   } else if (!isFrontFacing) {
     statusText.innerText = "✅ Side profile detected!";
   } else {
-    statusText.innerText =
-      "❌ Face not detected! Adjust your position.";
+    statusText.innerText = "❌ Face not detected! Adjust your position.";
   }
 
   function checkFrontFacing(leftEye, rightEye, nose) {
@@ -92,7 +101,7 @@ async function checkFrontProfile() {
 }
 
 window.onload = async function () {
-  await startVideo();
+  await startVideo(videoDevices.length > 0 ? videoDevices[0].deviceId : null);
   await getCameras();
   requestAnimationFrame(checkFrontProfile);
 };
