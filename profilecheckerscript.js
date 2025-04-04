@@ -16,6 +16,22 @@ async function startVideo() {
   }
 }
 
+async function getCameras() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  videoDevices = devices.filter(device => device.kind === "videoinput");
+  console.log("Available cameras:", videoDevices);
+}
+
+
+document.getElementById("switchCamera").addEventListener("click", async () => {
+  if (videoDevices.length > 1) {
+      currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+      await startVideo(videoDevices[currentDeviceIndex].deviceId);
+  } else {
+      alert("No other camera found!");
+  }
+});
+
 async function checkFrontProfile() {
   const video = document.getElementById("video");
   const statusText = document.getElementById("status");
