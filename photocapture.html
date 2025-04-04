@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Capturer</title>
+    <style>
+        video, canvas { width: 100%; max-width: 800px; }
+        #captureBtn, #downloadBtn { margin: 10px; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Photo Capturer</h2>
+    <video id="video" autoplay></video>
+    <button id="captureBtn">Capture Photo</button>
+    <canvas id="canvas"></canvas>
+    <a id="downloadBtn" style="display:none" download="captured_photo.png">Download Image</a>
+
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const captureBtn = document.getElementById("captureBtn");
+        const downloadBtn = document.getElementById("downloadBtn");
+        const ctx = canvas.getContext("2d");
+
+        // Step 1: Access the webcam
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing the camera:", error);
+            }
+        }
+
+        // Step 2: Capture photo from video feed
+        captureBtn.addEventListener("click", () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Step 3: Enable download button
+            downloadBtn.href = canvas.toDataURL("image/png");
+            downloadBtn.style.display = "block";
+        });
+
+        // Start the camera
+        startCamera();
+    </script>
+</body>
+</html>
